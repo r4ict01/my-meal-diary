@@ -87,8 +87,15 @@
           <div class="action-row">
             <button class="primary-button" type="submit">保存</button>
             <button class="ghost-button" type="button" id="clear-button">入力をクリア</button>
+            <button class="ghost-button" type="button" id="export-text-button">テキスト抽出</button>
+            <button class="ghost-button" type="button" id="export-csv-button">CSV出力</button>
           </div>
         </form>
+
+        <section class="export-panel" aria-live="polite" aria-labelledby="export-title">
+          <h3 id="export-title">抽出結果</h3>
+          <pre id="export-output">未抽出</pre>
+        </section>
       </section>
 
       <section class="history-panel" aria-labelledby="history-title">

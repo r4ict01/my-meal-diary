@@ -41,6 +41,9 @@ const mealTypeInput = document.querySelector("#meal-type");
 const mealNameInput = document.querySelector("#meal-name");
 const noteInput = document.querySelector("#entry-note");
 const clearButton = document.querySelector("#clear-button");
+const exportTextButton = document.querySelector("#export-text-button");
+const exportCsvButton = document.querySelector("#export-csv-button");
+const exportOutput = document.querySelector("#export-output");
 const entryList = document.querySelector("#entry-list");
 const emptyState = document.querySelector("#empty-state");
 const saveState = document.querySelector("#save-state");
@@ -416,6 +419,41 @@ function updateSaveState(text) {
   saveState.textContent = text;
 }
 
+function buildExportText(date, mealType, mealName) {
+  const cleanDate = date || "未入力";
+  const cleanMealType = mealTypeNames[mealType] || mealType || "未入力";
+  const cleanMealName = mealName ? mealName.trim() : "未入力";
+  return `日付: ${cleanDate}\n食事の種類: ${cleanMealType}\n食事名: ${cleanMealName}`;
+}
+
+function escapeCsvValue(value) {
+  return `"${String(value).replaceAll('"', '""')}"`;
+}
+
+function buildExportCsv(date, mealType, mealName) {
+  const cleanDate = date || "未入力";
+  const cleanMealType = mealTypeNames[mealType] || mealType || "未入力";
+  const cleanMealName = mealName ? mealName.trim() : "未入力";
+  const header = ["日付", "食事の種類", "食事名"].map(escapeCsvValue).join(",");
+  const row = [cleanDate, cleanMealType, cleanMealName].map(escapeCsvValue).join(",");
+
+  return `${header}\n${row}`;
+}
+
+function renderExportText() {
+  const date = dateInput.value;
+  const mealType = getSelectedMealType();
+  const mealName = mealNameInput.value.trim();
+  const text = buildExportText(date, mealType, mealName);
+
+  exportOutput.textContent = text;
+}
+
+function renderExportCsv() {
+  const csv = buildExportCsv(dateInput.value, getSelectedMealType(), mealNameInput.value);
+  exportOutput.textContent = csv;
+}
+
 function loadEntryIntoForm(entry) {
   dateInput.value = entry.date;
   mealTypeInput.value = entry.mealType;
@@ -499,12 +537,23 @@ noteInput.addEventListener("input", () => {
   updateSaveState("編集中");
 });
 
+exportTextButton.addEventListener("click", () => {
+  renderExportText();
+  updateSaveState("テキスト抽出済み");
+});
+
+exportCsvButton.addEventListener("click", () => {
+  renderExportCsv();
+  updateSaveState("CSV出力済み");
+});
+
 form.querySelector("#mood-grid").addEventListener("change", () => {
   updateSaveState("編集中");
 });
 
 clearButton.addEventListener("click", () => {
   resetForm();
+  exportOutput.textContent = "未抽出";
 });
 
 entryList.addEventListener("click", (event) => {
@@ -547,5 +596,6 @@ moodFilter.addEventListener("change", renderEntries);
 
 dateInput.value = getTodayIso();
 mealTypeInput.value = "breakfast";
+exportOutput.textContent = buildExportText(dateInput.value, mealTypeInput.value, mealNameInput.value);
 updateCharCount();
 render();

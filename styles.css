@@ -248,6 +248,29 @@ textarea:focus {
   font-size: 0.82rem;
 }
 
+.export-panel {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fffefb;
+  padding: 14px 16px;
+}
+
+.export-panel h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+
+#export-output {
+  margin: 0;
+  min-height: 90px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--ink);
+  line-height: 1.7;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
 .action-row {
   justify-content: flex-start;
   flex-wrap: wrap;
