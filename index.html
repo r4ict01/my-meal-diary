@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>かんたん日記</title>
+    <title>My Meal Diary</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -11,8 +11,8 @@
       <section class="editor-panel" aria-labelledby="app-title">
         <div class="brand-row">
           <div>
-            <p class="eyebrow">localStorage diary</p>
-            <h1 id="app-title">かんたん日記</h1>
+            <p class="eyebrow">meal log</p>
+            <h1 id="app-title">My Meal Diary</h1>
           </div>
           <div class="save-state" id="save-state" aria-live="polite">未保存</div>
         </div>
@@ -21,49 +21,67 @@
           <label class="field-label" for="entry-date">日付</label>
           <input id="entry-date" name="date" type="date" required />
 
+          <label class="field-label" for="meal-type">食事の種類</label>
+          <select id="meal-type" name="mealType" required>
+            <option value="breakfast">朝食</option>
+            <option value="lunch">昼食</option>
+            <option value="dinner">夕食</option>
+            <option value="snack">間食</option>
+          </select>
+
+          <label class="field-label" for="meal-name">食事名</label>
+          <input
+            id="meal-name"
+            name="mealName"
+            type="text"
+            maxlength="60"
+            placeholder="例：カレーライス、サラダチキン、パンケーキ"
+            required
+          />
+
           <fieldset class="mood-field">
-            <legend>今日の気分</legend>
+            <legend>満足度</legend>
             <div class="mood-grid" id="mood-grid">
               <label class="mood-option">
                 <input type="radio" name="mood" value="happy" required />
-                <span class="mood-face">😊</span>
-                <span>うれしい</span>
+                <span class="mood-face">🤩</span>
+                <span>とてもおいしい</span>
               </label>
               <label class="mood-option">
-                <input type="radio" name="mood" value="calm" />
-                <span class="mood-face">😌</span>
-                <span>おだやか</span>
+                <input type="radio" name="mood" value="good" />
+                <span class="mood-face">😋</span>
+                <span>おいしい</span>
               </label>
               <label class="mood-option">
                 <input type="radio" name="mood" value="normal" />
                 <span class="mood-face">🙂</span>
-                <span>ふつう</span>
+                <span>普通</span>
               </label>
               <label class="mood-option">
-                <input type="radio" name="mood" value="tired" />
-                <span class="mood-face">😵‍💫</span>
-                <span>つかれた</span>
+                <input type="radio" name="mood" value="okay" />
+                <span class="mood-face">😐</span>
+                <span>少し物足りない</span>
               </label>
               <label class="mood-option">
                 <input type="radio" name="mood" value="sad" />
-                <span class="mood-face">🥲</span>
-                <span>しょんぼり</span>
+                <span class="mood-face">😕</span>
+                <span>残念</span>
               </label>
             </div>
           </fieldset>
 
-          <label class="field-label" for="entry-note">一言メモ</label>
+          <label class="field-label" for="entry-note">メモ</label>
           <textarea
             id="entry-note"
             name="note"
             rows="5"
-            maxlength="160"
-            placeholder="今日あったこと、今の気持ちを短く書いてみよう"
+            maxlength="200"
+            placeholder="食事の感想、量、調子、気分を簡単に書いてください"
             required
           ></textarea>
           <div class="note-meta">
-            <span id="editing-label">今日の記録を書いています</span>
-            <span><span id="char-count">0</span>/160</span>
+            <span id="editing-label">今日の食事を記録しています</span>
+            <span><span id="char-count">0</span>/200</span>
           </div>
 
           <div class="action-row">
@@ -76,47 +94,47 @@
       <section class="history-panel" aria-labelledby="history-title">
         <div class="history-header">
           <div>
-            <p class="eyebrow">my records</p>
-            <h2 id="history-title">過去ログ</h2>
+            <p class="eyebrow">food history</p>
+            <h2 id="history-title">食事履歴</h2>
           </div>
           <div class="stats-strip" aria-label="記録数">
             <strong id="entry-count">0</strong>
-            <span>days</span>
+            <span>meals</span>
           </div>
         </div>
 
         <section class="biorhythm" aria-labelledby="biorhythm-title">
           <div>
-            <p class="biorhythm-label" id="biorhythm-title">気分バイオリズム</p>
-            <strong id="biorhythm-message">記録を保存すると表示されます</strong>
+            <p class="biorhythm-label" id="biorhythm-title">満足度の流れ</p>
+            <strong id="biorhythm-message">食事の満足度を記録すると表示されます</strong>
           </div>
-          <div class="rhythm-chart" id="rhythm-chart" aria-label="最近7件の気分の流れ"></div>
-          <p id="biorhythm-detail" class="biorhythm-detail">最近7件の気分の変化を表示します。</p>
+          <div class="rhythm-chart" id="rhythm-chart" aria-label="最近7件の満足度の流れ"></div>
+          <p id="biorhythm-detail" class="biorhythm-detail">最近7件の食事の満足度の変化を表示します。</p>
         </section>
 
-        <div class="summary-row" id="summary-row" aria-label="気分の集計"></div>
+        <div class="summary-row" id="summary-row" aria-label="満足度の集計"></div>
 
         <div class="list-tools">
           <label class="search-box" for="search-input">
             <span>検索</span>
-            <input id="search-input" type="search" placeholder="メモから探す" />
+            <input id="search-input" type="search" placeholder="食事名やメモから探す" />
           </label>
-          <select id="mood-filter" aria-label="気分で絞り込み">
-            <option value="all">すべての気分</option>
-            <option value="happy">うれしい</option>
-            <option value="calm">おだやか</option>
-            <option value="normal">ふつう</option>
-            <option value="tired">つかれた</option>
-            <option value="sad">しょんぼり</option>
+          <select id="mood-filter" aria-label="満足度で絞り込み">
+            <option value="all">すべての満足度</option>
+            <option value="happy">とてもおいしい</option>
+            <option value="good">おいしい</option>
+            <option value="normal">普通</option>
+            <option value="okay">少し物足りない</option>
+            <option value="sad">残念</option>
           </select>
         </div>
 
         <div id="empty-state" class="empty-state">
           <strong>まだ記録がありません</strong>
-          <span>今日の気分と一言メモを保存すると、ここに表示されます。</span>
+          <span>食事の内容と満足度を保存すると、ここに表示されます。</span>
         </div>
 
-        <ul id="entry-list" class="entry-list" aria-label="保存した日記一覧"></ul>
+        <ul id="entry-list" class="entry-list" aria-label="保存した食事一覧"></ul>
       </section>
     </main>
 

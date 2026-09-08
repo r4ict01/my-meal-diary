@@ -1,35 +1,44 @@
-const STORAGE_KEY = "tiny-diary.entries.v1";
+const STORAGE_KEY = "my-meal-diary.entries.v1";
+
+const mealTypeNames = {
+  breakfast: "朝食",
+  lunch: "昼食",
+  dinner: "夕食",
+  snack: "間食",
+};
 
 const moods = {
   happy: {
-    label: "うれしい",
-    face: "😊",
+    label: "とてもおいしい",
+    face: "🤩",
     score: 5,
   },
-  calm: {
-    label: "おだやか",
-    face: "😌",
+  good: {
+    label: "おいしい",
+    face: "😋",
     score: 4,
   },
   normal: {
-    label: "ふつう",
+    label: "普通",
     face: "🙂",
     score: 3,
   },
-  tired: {
-    label: "つかれた",
-    face: "😵‍💫",
+  okay: {
+    label: "少し物足りない",
+    face: "😐",
     score: 2,
   },
   sad: {
-    label: "しょんぼり",
-    face: "🥲",
+    label: "残念",
+    face: "😕",
     score: 1,
   },
 };
 
 const form = document.querySelector("#diary-form");
 const dateInput = document.querySelector("#entry-date");
+const mealTypeInput = document.querySelector("#meal-type");
+const mealNameInput = document.querySelector("#meal-name");
 const noteInput = document.querySelector("#entry-note");
 const clearButton = document.querySelector("#clear-button");
 const entryList = document.querySelector("#entry-list");
@@ -88,6 +97,10 @@ function sortEntries() {
   entries.sort((a, b) => b.date.localeCompare(a.date));
 }
 
+function getSelectedMealType() {
+  return mealTypeInput.value;
+}
+
 function getSelectedMood() {
   return form.elements.mood.value;
 }
@@ -132,15 +145,18 @@ function escapeHtml(text) {
     .replaceAll("'", "&#039;");
 }
 
+function getSearchableText(entry) {
+  const mealTypeLabel = mealTypeNames[entry.mealType] ?? entry.mealType ?? "";
+  return `${entry.date} ${mealTypeLabel} ${entry.mealName} ${entry.note} ${moods[entry.mood]?.label ?? ""}`.toLowerCase();
+}
+
 function getFilteredEntries() {
   const query = searchInput.value.trim().toLowerCase();
   const selectedMood = moodFilter.value;
 
   return entries.filter((entry) => {
-    const mood = moods[entry.mood];
     const matchesMood = selectedMood === "all" || entry.mood === selectedMood;
-    const searchableText = `${entry.date} ${entry.note} ${mood?.label ?? ""}`.toLowerCase();
-    const matchesQuery = !query || searchableText.includes(query);
+    const matchesQuery = !query || getSearchableText(entry).includes(query);
 
     return matchesMood && matchesQuery;
   });
@@ -152,17 +168,22 @@ function renderEntries() {
   entryList.innerHTML = filteredEntries
     .map((entry) => {
       const mood = moods[entry.mood] ?? moods.normal;
+      const mealTypeLabel = mealTypeNames[entry.mealType] ?? entry.mealType;
 
       return `
         <li class="entry-card">
           <div class="entry-topline">
             <span class="entry-date">${formatDate(entry.date)}</span>
+            <span class="entry-type-pill">${mealTypeLabel}</span>
+          </div>
+          <div class="entry-header">
+            <strong>${escapeHtml(entry.mealName)}</strong>
             <span class="mood-badge">${mood.face} ${mood.label}</span>
           </div>
           <p class="entry-note">${escapeHtml(entry.note)}</p>
           <div class="entry-actions">
-            <button type="button" data-action="edit" data-date="${entry.date}">編集</button>
-            <button class="danger-button" type="button" data-action="delete" data-date="${entry.date}">削除</button>
+            <button type="button" data-action="edit" data-date="${entry.date}" data-meal-type="${entry.mealType}">編集</button>
+            <button class="danger-button" type="button" data-action="delete" data-date="${entry.date}" data-meal-type="${entry.mealType}">削除</button>
           </div>
         </li>
       `;
@@ -171,13 +192,13 @@ function renderEntries() {
 
   if (entries.length > 0 && filteredEntries.length === 0) {
     emptyState.innerHTML = `
-      <strong>条件に合う記録がありません</strong>
-      <span>検索ワードや気分フィルターを変えてみてください。</span>
+      <strong>条件に合う食事がありません</strong>
+      <span>検索ワードや満足度フィルターを変えてみてください。</span>
     `;
   } else {
     emptyState.innerHTML = `
       <strong>まだ記録がありません</strong>
-      <span>今日の気分と一言メモを保存すると、ここに表示されます。</span>
+      <span>食事の内容と満足度を保存すると、ここに表示されます。</span>
     `;
   }
 
@@ -199,8 +220,8 @@ function renderSummary() {
 function renderBiorhythm() {
   if (entries.length === 0) {
     rhythmChart.innerHTML = "";
-    biorhythmMessage.textContent = "記録を保存すると表示されます";
-    biorhythmDetail.textContent = "最近7件の気分を波形グラフで表示します。";
+    biorhythmMessage.textContent = "食事の満足度を記録すると表示されます";
+    biorhythmDetail.textContent = "最近7件の食事の満足度の変化を表示します。";
     return;
   }
 
@@ -267,18 +288,18 @@ function createBiorhythmSvg(recentEntries) {
       class="rhythm-svg"
       viewBox="0 0 ${width} ${height}"
       role="img"
-      aria-label="最近${recentEntries.length}件の気分バイオリズム"
+      aria-label="最近${recentEntries.length}件の満足度の流れ"
     >
       <defs>
         <linearGradient id="rhythm-line-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" stop-color="#6aa9ff" />
-          <stop offset="45%" stop-color="#79c7b3" />
-          <stop offset="75%" stop-color="#ffd166" />
-          <stop offset="100%" stop-color="#f47fa2" />
+          <stop offset="0%" stop-color="#f59e0b" />
+          <stop offset="45%" stop-color="#84cc16" />
+          <stop offset="75%" stop-color="#2dd4bf" />
+          <stop offset="100%" stop-color="#f97316" />
         </linearGradient>
         <linearGradient id="rhythm-area-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#f47fa2" stop-opacity="0.24" />
-          <stop offset="100%" stop-color="#6aa9ff" stop-opacity="0.03" />
+          <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.24" />
+          <stop offset="100%" stop-color="#f97316" stop-opacity="0.03" />
         </linearGradient>
       </defs>
       <g class="rhythm-grid" aria-hidden="true">
@@ -338,34 +359,34 @@ function buildSinglePointWave(point, chartWidth) {
 
 function getBiorhythmMessage(trend, average, entryLength) {
   if (entryLength === 1) {
-    return "最初のリズムを記録しました";
+    return "最初の食事を記録しました";
   }
 
   if (trend >= 2) {
-    return "上向きのリズム";
+    return "食事の満足度が上向き";
   }
 
   if (trend >= 0.5) {
-    return "少し上向き";
+    return "少し良い流れ";
   }
 
   if (trend <= -2) {
-    return "休むサイン多め";
+    return "食事の満足度が低め";
   }
 
   if (trend <= -0.5) {
-    return "少し下がり気味";
+    return "少し落ち気味";
   }
 
   if (average >= 4) {
-    return "安定していい流れ";
+    return "安定しておいしい食事が多い";
   }
 
   if (average <= 2.2) {
-    return "ゆっくり整えたいリズム";
+    return "食事のバランスを見直したい日";
   }
 
-  return "安定したリズム";
+  return "安定した満足度";
 }
 
 function render() {
@@ -378,12 +399,13 @@ function render() {
 function resetForm() {
   form.reset();
   dateInput.value = getTodayIso();
+  mealTypeInput.value = "breakfast";
   clearSelectedMood();
+  mealNameInput.value = "";
   noteInput.value = "";
-  editingLabel.textContent = "今日の記録を書いています";
+  editingLabel.textContent = "今日の食事を記録しています";
   updateCharCount();
   updateSaveState("未保存");
-  renderBiorhythm();
 }
 
 function updateCharCount() {
@@ -396,31 +418,36 @@ function updateSaveState(text) {
 
 function loadEntryIntoForm(entry) {
   dateInput.value = entry.date;
+  mealTypeInput.value = entry.mealType;
+  mealNameInput.value = entry.mealName;
   setSelectedMood(entry.mood);
   noteInput.value = entry.note;
-  editingLabel.textContent = `${formatDate(entry.date)}の記録を編集中`;
+  editingLabel.textContent = `${formatDate(entry.date)}の${mealTypeNames[entry.mealType] ?? entry.mealType}を編集中`;
   updateCharCount();
   updateSaveState("編集中");
-  renderBiorhythm();
 }
 
 form.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const date = dateInput.value;
+  const mealType = getSelectedMealType();
+  const mealName = mealNameInput.value.trim();
   const mood = getSelectedMood();
   const note = noteInput.value.trim();
 
-  if (!date || !mood || !note) {
+  if (!date || !mealType || !mealName || !mood || !note) {
     updateSaveState("入力を確認");
     return;
   }
 
-  const existingIndex = entries.findIndex((entry) => entry.date === date);
+  const existingIndex = entries.findIndex((entry) => entry.date === date && entry.mealType === mealType);
   const now = new Date().toISOString();
   const nextEntry = {
     id: existingIndex >= 0 ? entries[existingIndex].id : createId(),
     date,
+    mealType,
+    mealName,
     mood,
     note,
     createdAt: existingIndex >= 0 ? entries[existingIndex].createdAt : now,
@@ -439,12 +466,13 @@ form.addEventListener("submit", (event) => {
   updateSaveState("保存済み");
 });
 
-dateInput.addEventListener("change", () => {
-  if (!dateInput.value) {
+function refreshFormForSelectedMeal() {
+  const date = dateInput.value;
+  if (!date) {
     return;
   }
 
-  const existingEntry = entries.find((entry) => entry.date === dateInput.value);
+  const existingEntry = entries.find((entry) => entry.date === date && entry.mealType === mealTypeInput.value);
 
   if (existingEntry) {
     loadEntryIntoForm(existingEntry);
@@ -452,11 +480,18 @@ dateInput.addEventListener("change", () => {
   }
 
   clearSelectedMood();
+  mealNameInput.value = "";
   noteInput.value = "";
-  editingLabel.textContent = `${formatDate(dateInput.value)}の記録を書いています`;
+  editingLabel.textContent = `${formatDate(date)}の${mealTypeNames[mealTypeInput.value]}を記録しています`;
   updateCharCount();
   updateSaveState("未保存");
-  renderBiorhythm();
+}
+
+dateInput.addEventListener("change", refreshFormForSelectedMeal);
+mealTypeInput.addEventListener("change", refreshFormForSelectedMeal);
+
+mealNameInput.addEventListener("input", () => {
+  updateSaveState("編集中");
 });
 
 noteInput.addEventListener("input", () => {
@@ -480,7 +515,8 @@ entryList.addEventListener("click", (event) => {
   }
 
   const entryDate = button.dataset.date;
-  const entry = entries.find((item) => item.date === entryDate);
+  const mealType = button.dataset.mealType;
+  const entry = entries.find((item) => item.date === entryDate && item.mealType === mealType);
 
   if (!entry) {
     return;
@@ -493,13 +529,13 @@ entryList.addEventListener("click", (event) => {
   }
 
   if (button.dataset.action === "delete") {
-    const shouldDelete = confirm(`${formatDate(entry.date)}の記録を削除しますか？`);
+    const shouldDelete = confirm(`${formatDate(entry.date)}の${mealTypeNames[entry.mealType]}を削除しますか？`);
 
     if (!shouldDelete) {
       return;
     }
 
-    entries = entries.filter((item) => item.date !== entry.date);
+    entries = entries.filter((item) => !(item.date === entry.date && item.mealType === entry.mealType));
     saveEntries();
     render();
     resetForm();
@@ -510,5 +546,6 @@ searchInput.addEventListener("input", renderEntries);
 moodFilter.addEventListener("change", renderEntries);
 
 dateInput.value = getTodayIso();
+mealTypeInput.value = "breakfast";
 updateCharCount();
 render();
