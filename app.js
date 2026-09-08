@@ -43,6 +43,7 @@ const noteInput = document.querySelector("#entry-note");
 const clearButton = document.querySelector("#clear-button");
 const exportTextButton = document.querySelector("#export-text-button");
 const exportCsvButton = document.querySelector("#export-csv-button");
+const exportPeriod = document.querySelector("#export-period");
 const exportOutput = document.querySelector("#export-output");
 const entryList = document.querySelector("#entry-list");
 const emptyState = document.querySelector("#empty-state");
@@ -419,10 +420,10 @@ function updateSaveState(text) {
   saveState.textContent = text;
 }
 
-function buildExportText(date, mealType, mealName) {
-  const cleanDate = date || "未入力";
-  const cleanMealType = mealTypeNames[mealType] || mealType || "未入力";
-  const cleanMealName = mealName ? mealName.trim() : "未入力";
+function buildEntryExportText(entry) {
+  const cleanDate = entry.date || "未入力";
+  const cleanMealType = mealTypeNames[entry.mealType] || entry.mealType || "未入力";
+  const cleanMealName = entry.mealName ? entry.mealName.trim() : "未入力";
   return `日付: ${cleanDate}\n食事の種類: ${cleanMealType}\n食事名: ${cleanMealName}`;
 }
 
@@ -430,28 +431,50 @@ function escapeCsvValue(value) {
   return `"${String(value).replaceAll('"', '""')}"`;
 }
 
-function buildExportCsv(date, mealType, mealName) {
-  const cleanDate = date || "未入力";
-  const cleanMealType = mealTypeNames[mealType] || mealType || "未入力";
-  const cleanMealName = mealName ? mealName.trim() : "未入力";
-  const header = ["日付", "食事の種類", "食事名"].map(escapeCsvValue).join(",");
-  const row = [cleanDate, cleanMealType, cleanMealName].map(escapeCsvValue).join(",");
+function getExportEntries() {
+  const today = parseIsoDate(getTodayIso());
+  const daysAgo = exportPeriod.value === "month" ? 29 : 6;
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - daysAgo);
 
-  return `${header}\n${row}`;
+  return [...entries]
+    .filter((entry) => {
+      const entryDate = parseIsoDate(entry.date);
+      return entryDate >= startDate && entryDate <= today;
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function buildHistoryExportText() {
+  const exportEntries = getExportEntries();
+  if (exportEntries.length === 0) {
+    return "選択した期間に記録がありません";
+  }
+
+  return exportEntries
+    .map(buildEntryExportText)
+    .join("\n\n");
+}
+
+function buildHistoryExportCsv() {
+  const header = ["日付", "食事の種類", "食事名"].map(escapeCsvValue).join(",");
+  const rows = getExportEntries()
+    .map((entry) => {
+      const mealType = mealTypeNames[entry.mealType] || entry.mealType || "未入力";
+      return [entry.date || "未入力", mealType, entry.mealName || "未入力"]
+        .map(escapeCsvValue)
+        .join(",");
+    });
+
+  return [header, ...rows].join("\n");
 }
 
 function renderExportText() {
-  const date = dateInput.value;
-  const mealType = getSelectedMealType();
-  const mealName = mealNameInput.value.trim();
-  const text = buildExportText(date, mealType, mealName);
-
-  exportOutput.textContent = text;
+  exportOutput.textContent = buildHistoryExportText();
 }
 
 function renderExportCsv() {
-  const csv = buildExportCsv(dateInput.value, getSelectedMealType(), mealNameInput.value);
-  exportOutput.textContent = csv;
+  exportOutput.textContent = buildHistoryExportCsv();
 }
 
 function loadEntryIntoForm(entry) {
@@ -547,13 +570,16 @@ exportCsvButton.addEventListener("click", () => {
   updateSaveState("CSV出力済み");
 });
 
+exportPeriod.addEventListener("change", () => {
+  exportOutput.textContent = "未出力";
+});
+
 form.querySelector("#mood-grid").addEventListener("change", () => {
   updateSaveState("編集中");
 });
 
 clearButton.addEventListener("click", () => {
   resetForm();
-  exportOutput.textContent = "未抽出";
 });
 
 entryList.addEventListener("click", (event) => {
@@ -596,6 +622,5 @@ moodFilter.addEventListener("change", renderEntries);
 
 dateInput.value = getTodayIso();
 mealTypeInput.value = "breakfast";
-exportOutput.textContent = buildExportText(dateInput.value, mealTypeInput.value, mealNameInput.value);
 updateCharCount();
 render();

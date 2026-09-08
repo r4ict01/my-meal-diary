@@ -87,15 +87,8 @@
           <div class="action-row">
             <button class="primary-button" type="submit">保存</button>
             <button class="ghost-button" type="button" id="clear-button">入力をクリア</button>
-            <button class="ghost-button" type="button" id="export-text-button">テキスト抽出</button>
-            <button class="ghost-button" type="button" id="export-csv-button">CSV出力</button>
           </div>
         </form>
-
-        <section class="export-panel" aria-live="polite" aria-labelledby="export-title">
-          <h3 id="export-title">抽出結果</h3>
-          <pre id="export-output">未抽出</pre>
-        </section>
       </section>
 
       <section class="history-panel" aria-labelledby="history-title">
@@ -109,6 +102,24 @@
             <span>meals</span>
           </div>
         </div>
+
+        <section class="export-panel" aria-live="polite" aria-labelledby="export-title">
+          <div class="export-header">
+            <h3 id="export-title">履歴を出力</h3>
+            <label class="export-period" for="export-period">
+              <span>期間</span>
+              <select id="export-period">
+                <option value="week">過去1週間</option>
+                <option value="month">過去1か月</option>
+              </select>
+            </label>
+            <div class="export-actions">
+              <button class="ghost-button" type="button" id="export-text-button">テキスト出力</button>
+              <button class="ghost-button" type="button" id="export-csv-button">CSV出力</button>
+            </div>
+          </div>
+          <pre id="export-output">未出力</pre>
+        </section>
 
         <section class="biorhythm" aria-labelledby="biorhythm-title">
           <div>

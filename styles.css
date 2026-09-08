@@ -249,20 +249,55 @@ textarea:focus {
 }
 
 .export-panel {
-  margin-top: 18px;
+  margin-bottom: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fffefb;
   padding: 14px 16px;
 }
 
+.export-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .export-panel h3 {
-  margin: 0 0 8px;
+  margin: 0;
   font-size: 1rem;
 }
 
+.export-period {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.export-period select {
+  min-height: 38px;
+  width: auto;
+  padding: 0 10px;
+}
+
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.export-actions button {
+  min-height: 38px;
+  padding: 0 13px;
+  font-size: 0.85rem;
+}
+
 #export-output {
-  margin: 0;
+  margin: 12px 0 0;
   min-height: 90px;
   white-space: pre-wrap;
   word-break: break-word;
